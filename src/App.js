@@ -91,7 +91,7 @@ export default function App() {
     const grigio = { r: 247, g: 247, b: 245 };
     const bordo = { r: 210, g: 210, b: 205 };
 
-    const logoImg = await caricaImmagine("/logo.png");
+    const logoImg = await caricaImmagine("/footer.png");
     const footerImg = await caricaImmagine("/footer.png");
 
     const logoW = 48;
@@ -272,7 +272,7 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <div className="header-inner">
-          <img src="/logo.png" alt="Milano Contract" className="header-logo" />
+          <img src="/footer.png" alt="Milano Contract" className="header-logo" />
           <span className="header-titolo">Rapporto Giornaliero di Cantiere</span>
         </div>
       </header>
@@ -407,10 +407,6 @@ export default function App() {
               + Nuovo rapportino
             </button>
           )}
-        </div>
-
-        <div className="form-footer">
-          <img src="/footer.png" alt="Milano Contract" className="footer-logo" />
         </div>
 
       </main>
