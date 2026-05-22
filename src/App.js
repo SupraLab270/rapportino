@@ -83,205 +83,215 @@ export default function App() {
     }
     setGenerando(true);
 
-    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-    const W = 210;
-    const margin = 14;
-    const colW = W - margin * 2;
-    let y = 0;
+    try {
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const W = 210;
+      const margin = 14;
+      const colW = W - margin * 2;
+      let y = 0;
 
-    const nero = { r: 20, g: 20, b: 20 };
-    const cyan = { r: 41, g: 181, b: 212 };
-    const grigio = { r: 247, g: 247, b: 245 };
-    const bordo = { r: 210, g: 210, b: 205 };
+      const nero = { r: 20, g: 20, b: 20 };
+      const cyan = { r: 41, g: 181, b: 212 };
+      const grigio = { r: 247, g: 247, b: 245 };
+      const bordo = { r: 210, g: 210, b: 205 };
 
-    const logoImg = await caricaImmagine("/footer.png");
+      const logoImg = await caricaImmagine("/footer.png");
 
-    const logoW = 48;
-    const logoH = logoImg
-      ? (logoImg.naturalHeight / logoImg.naturalWidth) * logoW
-      : 12;
-    const headerH = logoH + 12;
+      const logoW = 48;
+      const logoH = logoImg
+        ? (logoImg.naturalHeight / logoImg.naturalWidth) * logoW
+        : 12;
+      const headerH = logoH + 12;
 
-    doc.setFillColor(255, 255, 255);
-    doc.rect(0, 0, W, headerH, "F");
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, 0, W, headerH, "F");
 
-    if (logoImg) {
-      doc.addImage(logoImg, "PNG", margin, (headerH - logoH) / 2, logoW, logoH);
-    }
-
-    doc.setDrawColor(bordo.r, bordo.g, bordo.b);
-    doc.setLineWidth(0.3);
-    doc.line(margin + logoW + 6, 5, margin + logoW + 6, headerH - 5);
-
-    const titoloX = margin + logoW + 10;
-    const titoloSpazio = W - titoloX - margin;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(nero.r, nero.g, nero.b);
-    doc.text(
-      "Rapporto Giornaliero di Cantiere",
-      titoloX + titoloSpazio / 2,
-      headerH / 2 + 1.8,
-      { align: "center" }
-    );
-
-    doc.setFillColor(cyan.r, cyan.g, cyan.b);
-    doc.rect(0, headerH, W, 1, "F");
-
-    y = headerH + 7;
-
-    const infoFields = [
-      ["Cantiere", cantiere],
-      ["Responsabile", responsabile],
-      ["Data", formatDataITA(data)],
-    ];
-
-    infoFields.forEach(([label, val]) => {
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(7.5);
-      doc.setTextColor(140, 140, 135);
-      doc.text(label.toUpperCase(), margin, y);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(nero.r, nero.g, nero.b);
-      doc.text(val || "—", margin + 30, y);
-      y += 6;
-    });
-
-    y += 4;
-
-    const sezioneHeader = (titolo) => {
-      doc.setFillColor(grigio.r, grigio.g, grigio.b);
-      doc.rect(margin, y, colW, 5.5, "F");
-      doc.setFillColor(cyan.r, cyan.g, cyan.b);
-      doc.rect(margin, y, 2, 5.5, "F");
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(7.5);
-      doc.setTextColor(nero.r, nero.g, nero.b);
-      doc.text(titolo.toUpperCase(), margin + 5, y + 3.8);
-      y += 8;
-    };
-
-    sezioneHeader("Presenze operai");
-
-    const colNome = colW * 0.72;
-    const colOre = colW * 0.28;
-
-    doc.setFillColor(nero.r, nero.g, nero.b);
-    doc.rect(margin, y, colW, 6, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.setTextColor(255, 255, 255);
-    doc.text("OPERAIO", margin + 3, y + 4);
-    doc.text("ORE", margin + colNome + colOre / 2, y + 4, { align: "center" });
-    y += 6;
-
-    operai.forEach((o, i) => {
-      const bg = i % 2 === 0 ? { r: 255, g: 255, b: 255 } : grigio;
-      doc.setFillColor(bg.r, bg.g, bg.b);
-      doc.rect(margin, y, colW, 6, "F");
-      doc.setDrawColor(bordo.r, bordo.g, bordo.b);
-      doc.rect(margin, y, colW, 6, "S");
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(nero.r, nero.g, nero.b);
-      doc.text(o.nome || "—", margin + 3, y + 4);
-      doc.text(o.ore ? `${o.ore}h` : "—", margin + colNome + colOre / 2, y + 4, { align: "center" });
-      y += 6;
-    });
-
-    doc.setFillColor(cyan.r, cyan.g, cyan.b);
-    doc.rect(margin, y, colW, 6.5, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.setTextColor(255, 255, 255);
-    doc.text("TOTALE ORE", margin + 3, y + 4.5);
-    doc.text(`${totaleOre}h`, margin + colNome + colOre / 2, y + 4.5, { align: "center" });
-    y += 11;
-
-    const scriviTesto = (titolo, testo) => {
-      if (!testo) return;
-      sezioneHeader(titolo);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(nero.r, nero.g, nero.b);
-      const righe = doc.splitTextToSize(testo, colW - 6);
-      righe.forEach((riga) => { doc.text(riga, margin + 2, y); y += 5; });
-      y += 5;
-    };
-
-    scriviTesto("Attività svolte", attivita);
-    scriviTesto("Materiali utilizzati", materiali);
-    scriviTesto("Note e anomalie", anomalie);
-
-    if (foto.length > 0) {
-      const gap = 5;
-      const fotoW = (colW - gap) / 2;
-      const fotoH = fotoW * 0.65;
-
-      if (y + fotoH + 20 > 268) {
-        doc.addPage();
-        y = 14;
-      } else {
-        y += 4;
+      if (logoImg) {
+        doc.addImage(logoImg, "PNG", margin, (headerH - logoH) / 2, logoW, logoH);
       }
 
-      sezioneHeader(`Documentazione fotografica (${foto.length} foto)`);
-
-      let col = 0;
-      for (const f of foto) {
-        const x = margin + col * (fotoW + gap);
-        try {
-          doc.addImage(f.data, "JPEG", x, y, fotoW, fotoH);
-          doc.setFontSize(6);
-          doc.setTextColor(140, 140, 135);
-          const nome = f.name.length > 22 ? f.name.substring(0, 19) + "..." : f.name;
-          doc.text(nome, x + fotoW / 2, y + fotoH + 3.5, { align: "center" });
-        } catch (_) {}
-        col++;
-        if (col === 2) {
-          col = 0;
-          y += fotoH + 8;
-          if (y > 260) { doc.addPage(); y = 14; }
-        }
-      }
-      if (col === 1) y += fotoW * 0.65 + 8;
-    }
-
-    // ── FIRMA ─────────────────────────────────────────────
-    if (sigRef.current && !sigRef.current.isEmpty()) {
-      if (y + 35 > 268) { doc.addPage(); y = 14; }
-      else y += 4;
-
-      sezioneHeader("Firma responsabile");
-
-      const sigData = sigRef.current.getTrimmedCanvas().toDataURL("image/png");
-      const sigW = 70;
-      const sigH = 25;
-      doc.addImage(sigData, "PNG", margin, y, sigW, sigH);
       doc.setDrawColor(bordo.r, bordo.g, bordo.b);
       doc.setLineWidth(0.3);
-      doc.line(margin, y + sigH + 2, margin + sigW, y + sigH + 2);
-      doc.setFontSize(7);
-      doc.setTextColor(140, 140, 135);
-      doc.text(responsabile, margin, y + sigH + 6);
-      y += sigH + 12;
-    }
+      doc.line(margin + logoW + 6, 5, margin + logoW + 6, headerH - 5);
 
-    const totPagine = doc.getNumberOfPages();
-    for (let p = 1; p <= totPagine; p++) {
-      doc.setPage(p);
+      const titoloX = margin + logoW + 10;
+      const titoloSpazio = W - titoloX - margin;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(nero.r, nero.g, nero.b);
+      doc.text(
+        "Rapporto Giornaliero di Cantiere",
+        titoloX + titoloSpazio / 2,
+        headerH / 2 + 1.8,
+        { align: "center" }
+      );
+
+      doc.setFillColor(cyan.r, cyan.g, cyan.b);
+      doc.rect(0, headerH, W, 1, "F");
+
+      y = headerH + 7;
+
+      const infoFields = [
+        ["Cantiere", cantiere],
+        ["Responsabile", responsabile],
+        ["Data", formatDataITA(data)],
+      ];
+
+      infoFields.forEach(([label, val]) => {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(7.5);
+        doc.setTextColor(140, 140, 135);
+        doc.text(label.toUpperCase(), margin, y);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(nero.r, nero.g, nero.b);
+        doc.text(val || "—", margin + 30, y);
+        y += 6;
+      });
+
+      y += 4;
+
+      const sezioneHeader = (titolo) => {
+        doc.setFillColor(grigio.r, grigio.g, grigio.b);
+        doc.rect(margin, y, colW, 5.5, "F");
+        doc.setFillColor(cyan.r, cyan.g, cyan.b);
+        doc.rect(margin, y, 2, 5.5, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(7.5);
+        doc.setTextColor(nero.r, nero.g, nero.b);
+        doc.text(titolo.toUpperCase(), margin + 5, y + 3.8);
+        y += 8;
+      };
+
+      sezioneHeader("Presenze operai");
+
+      const colNome = colW * 0.72;
+      const colOre = colW * 0.28;
+
       doc.setFillColor(nero.r, nero.g, nero.b);
-      doc.rect(0, 287, W, 10, "F");
-      doc.setFontSize(7);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(160, 160, 155);
-      doc.text(`${cantiere} — ${formatDataITA(data)}`, margin, 293.5);
-      doc.text(`${p} / ${totPagine}`, W - margin, 293.5, { align: "right" });
+      doc.rect(margin, y, colW, 6, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(255, 255, 255);
+      doc.text("OPERAIO", margin + 3, y + 4);
+      doc.text("ORE", margin + colNome + colOre / 2, y + 4, { align: "center" });
+      y += 6;
+
+      operai.forEach((o, i) => {
+        const bg = i % 2 === 0 ? { r: 255, g: 255, b: 255 } : grigio;
+        doc.setFillColor(bg.r, bg.g, bg.b);
+        doc.rect(margin, y, colW, 6, "F");
+        doc.setDrawColor(bordo.r, bordo.g, bordo.b);
+        doc.rect(margin, y, colW, 6, "S");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(nero.r, nero.g, nero.b);
+        doc.text(o.nome || "—", margin + 3, y + 4);
+        doc.text(o.ore ? `${o.ore}h` : "—", margin + colNome + colOre / 2, y + 4, { align: "center" });
+        y += 6;
+      });
+
+      doc.setFillColor(cyan.r, cyan.g, cyan.b);
+      doc.rect(margin, y, colW, 6.5, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(255, 255, 255);
+      doc.text("TOTALE ORE", margin + 3, y + 4.5);
+      doc.text(`${totaleOre}h`, margin + colNome + colOre / 2, y + 4.5, { align: "center" });
+      y += 11;
+
+      const scriviTesto = (titolo, testo) => {
+        if (!testo) return;
+        sezioneHeader(titolo);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(nero.r, nero.g, nero.b);
+        const righe = doc.splitTextToSize(testo, colW - 6);
+        righe.forEach((riga) => { doc.text(riga, margin + 2, y); y += 5; });
+        y += 5;
+      };
+
+      scriviTesto("Attività svolte", attivita);
+      scriviTesto("Materiali utilizzati", materiali);
+      scriviTesto("Note e anomalie", anomalie);
+
+      if (foto.length > 0) {
+        const gap = 5;
+        const fotoW = (colW - gap) / 2;
+        const fotoH = fotoW * 0.65;
+
+        if (y + fotoH + 20 > 268) {
+          doc.addPage();
+          y = 14;
+        } else {
+          y += 4;
+        }
+
+        sezioneHeader(`Documentazione fotografica (${foto.length} foto)`);
+
+        let col = 0;
+        for (const f of foto) {
+          const x = margin + col * (fotoW + gap);
+          try {
+            doc.addImage(f.data, "JPEG", x, y, fotoW, fotoH);
+            doc.setFontSize(6);
+            doc.setTextColor(140, 140, 135);
+            const nome = f.name.length > 22 ? f.name.substring(0, 19) + "..." : f.name;
+            doc.text(nome, x + fotoW / 2, y + fotoH + 3.5, { align: "center" });
+          } catch (_) {}
+          col++;
+          if (col === 2) {
+            col = 0;
+            y += fotoH + 8;
+            if (y > 260) { doc.addPage(); y = 14; }
+          }
+        }
+        if (col === 1) y += fotoW * 0.65 + 8;
+      }
+
+      // ── FIRMA ─────────────────────────────────────────────
+      try {
+        if (sigRef.current && !sigRef.current.isEmpty()) {
+          if (y + 35 > 268) { doc.addPage(); y = 14; }
+          else y += 4;
+
+          sezioneHeader("Firma");
+
+          const sigData = sigRef.current.getTrimmedCanvas().toDataURL("image/png");
+          const sigW = 70;
+          const sigH = 25;
+          doc.addImage(sigData, "PNG", margin, y, sigW, sigH);
+          doc.setDrawColor(bordo.r, bordo.g, bordo.b);
+          doc.setLineWidth(0.3);
+          doc.line(margin, y + sigH + 2, margin + sigW, y + sigH + 2);
+          doc.setFontSize(7);
+          doc.setTextColor(140, 140, 135);
+          doc.text(responsabile, margin, y + sigH + 6);
+          y += sigH + 12;
+        }
+      } catch (e) {
+        console.warn("Firma non disponibile", e);
+      }
+
+      const totPagine = doc.getNumberOfPages();
+      for (let p = 1; p <= totPagine; p++) {
+        doc.setPage(p);
+        doc.setFillColor(nero.r, nero.g, nero.b);
+        doc.rect(0, 287, W, 10, "F");
+        doc.setFontSize(7);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(160, 160, 155);
+        doc.text(`${cantiere} — ${formatDataITA(data)}`, margin, 293.5);
+        doc.text(`${p} / ${totPagine}`, W - margin, 293.5, { align: "right" });
+      }
+
+      const nomefile = `rapporto_${cantiere.replace(/\s+/g, "_")}_${data}.pdf`;
+      doc.save(nomefile);
+    } catch (err) {
+      console.error("Errore generazione PDF", err);
+      alert("Errore nella generazione del PDF. Riprova.");
     }
 
-    const nomefile = `rapporto_${cantiere.replace(/\s+/g, "_")}_${data}.pdf`;
-    doc.save(nomefile);
     setGenerando(false);
     setSuccesso(true);
   };
@@ -396,7 +406,7 @@ export default function App() {
             <SignatureCanvas
               ref={sigRef}
               penColor="#141414"
-              canvasProps={{ className: "firma-canvas" }}
+              canvasProps={{ className: "firma-canvas", width: 600, height: 160 }}
             />
             <span className="firma-hint">Firma con il dito</span>
           </div>
