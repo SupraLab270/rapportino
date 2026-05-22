@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import jsPDF from "jspdf";
+import SignatureCanvas from "react-signature-canvas";
 import "./App.css";
 
 const emptyOperaio = () => ({ nome: "", ore: "" });
@@ -16,6 +17,7 @@ export default function App() {
   const [generando, setGenerando] = useState(false);
   const [successo, setSuccesso] = useState(false);
   const fotoRef = useRef();
+  const sigRef = useRef();
 
   const totaleOre = operai.reduce((acc, o) => acc + (parseFloat(o.ore) || 0), 0);
 
@@ -29,6 +31,7 @@ export default function App() {
     setAnomalie("");
     setFoto([]);
     setSuccesso(false);
+    if (sigRef.current) sigRef.current.clear();
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -93,9 +96,7 @@ export default function App() {
 
     const logoImg = await caricaImmagine("/footer.png");
 
-    // ── HEADER ──────────────────────────────────────────────
     const logoW = 48;
-    // Calcola ratio reale dall'immagine
     const logoH = logoImg
       ? (logoImg.naturalHeight / logoImg.naturalWidth) * logoW
       : 12;
@@ -244,9 +245,29 @@ export default function App() {
           if (y > 260) { doc.addPage(); y = 14; }
         }
       }
+      if (col === 1) y += fotoW * 0.65 + 8;
     }
 
-    // ── FOOTER SU OGNI PAGINA (solo numerazione, niente logo) ───
+    // ── FIRMA ─────────────────────────────────────────────
+    if (sigRef.current && !sigRef.current.isEmpty()) {
+      if (y + 35 > 268) { doc.addPage(); y = 14; }
+      else y += 4;
+
+      sezioneHeader("Firma responsabile");
+
+      const sigData = sigRef.current.getTrimmedCanvas().toDataURL("image/png");
+      const sigW = 70;
+      const sigH = 25;
+      doc.addImage(sigData, "PNG", margin, y, sigW, sigH);
+      doc.setDrawColor(bordo.r, bordo.g, bordo.b);
+      doc.setLineWidth(0.3);
+      doc.line(margin, y + sigH + 2, margin + sigW, y + sigH + 2);
+      doc.setFontSize(7);
+      doc.setTextColor(140, 140, 135);
+      doc.text(responsabile, margin, y + sigH + 6);
+      y += sigH + 12;
+    }
+
     const totPagine = doc.getNumberOfPages();
     for (let p = 1; p <= totPagine; p++) {
       doc.setPage(p);
@@ -280,33 +301,18 @@ export default function App() {
           <h2 className="sezione-titolo">Dati generali</h2>
           <div className="campo">
             <label>Nome cantiere *</label>
-            <input
-              type="text"
-              placeholder="Es. Via Roma 12, Milano"
-              value={cantiere}
-              onChange={(e) => setCantiere(e.target.value)}
-            />
+            <input type="text" placeholder="Es. Via Roma 12, Milano"
+              value={cantiere} onChange={(e) => setCantiere(e.target.value)} />
           </div>
           <div className="campo-row">
             <div className="campo">
               <label>Data *</label>
-              <input
-                type="date"
-                value={data}
-                onChange={(e) => {
-                  setData(e.target.value);
-                  e.target.blur();
-                }}
-              />
+              <input type="date" value={data} onChange={(e) => { setData(e.target.value); e.target.blur(); }} />
             </div>
             <div className="campo">
               <label>Responsabile *</label>
-              <input
-                type="text"
-                placeholder="Nome cognome"
-                value={responsabile}
-                onChange={(e) => setResponsabile(e.target.value)}
-              />
+              <input type="text" placeholder="Nome cognome"
+                value={responsabile} onChange={(e) => setResponsabile(e.target.value)} />
             </div>
           </div>
         </section>
@@ -321,23 +327,12 @@ export default function App() {
               <div className="operaio-row" key={i}>
                 <div className="operaio-num">{i + 1}</div>
                 <div className="campo flex1">
-                  <input
-                    type="text"
-                    placeholder="Nome operaio"
-                    value={o.nome}
-                    onChange={(e) => aggiornaOperaio(i, "nome", e.target.value)}
-                  />
+                  <input type="text" placeholder="Nome operaio" value={o.nome}
+                    onChange={(e) => aggiornaOperaio(i, "nome", e.target.value)} />
                 </div>
                 <div className="campo ore-campo">
-                  <input
-                    type="number"
-                    placeholder="Ore"
-                    min="0"
-                    max="24"
-                    step="0.5"
-                    value={o.ore}
-                    onChange={(e) => aggiornaOperaio(i, "ore", e.target.value)}
-                  />
+                  <input type="number" placeholder="Ore" min="0" max="24" step="0.5" value={o.ore}
+                    onChange={(e) => aggiornaOperaio(i, "ore", e.target.value)} />
                 </div>
                 {operai.length > 1 && (
                   <button className="btn-rimuovi" onClick={() => rimuoviOperaio(i)} aria-label="Rimuovi operaio">×</button>
@@ -390,6 +385,21 @@ export default function App() {
               ))}
             </div>
           )}
+        </section>
+
+        <section className="sezione">
+          <div className="sezione-head">
+            <h2 className="sezione-titolo">Firma</h2>
+            <button className="btn-cancella-firma" onClick={() => sigRef.current.clear()}>Cancella</button>
+          </div>
+          <div className="firma-wrapper">
+            <SignatureCanvas
+              ref={sigRef}
+              penColor="#141414"
+              canvasProps={{ className: "firma-canvas" }}
+            />
+            <span className="firma-hint">Firma con il dito</span>
+          </div>
         </section>
 
         <div className="cta-area">

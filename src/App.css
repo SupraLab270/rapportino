@@ -339,3 +339,45 @@ textarea {
   background: var(--cyan);
   color: var(--white);
 }
+
+.firma-wrapper {
+  position: relative;
+  border: 1.5px solid var(--grigio-bordo);
+  border-radius: var(--radius-sm);
+  background: var(--grigio-bg);
+  overflow: hidden;
+}
+
+.firma-canvas {
+  width: 100% !important;
+  height: 160px !important;
+  display: block;
+}
+
+.firma-hint {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--testo-muted);
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.btn-cancella-firma {
+  background: transparent;
+  border: 1.5px solid var(--grigio-bordo);
+  border-radius: var(--radius-sm);
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--testo-muted);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn-cancella-firma:active {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
