@@ -19,6 +19,19 @@ export default function App() {
 
   const totaleOre = operai.reduce((acc, o) => acc + (parseFloat(o.ore) || 0), 0);
 
+  const nuovoRapportino = () => {
+    setCantiere("");
+    setData(new Date().toISOString().split("T")[0]);
+    setResponsabile("");
+    setOperai([emptyOperaio()]);
+    setAttivita("");
+    setMateriali("");
+    setAnomalie("");
+    setFoto([]);
+    setSuccesso(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const aggiornaOperaio = (i, campo, val) => {
     const aggiornati = [...operai];
     aggiornati[i] = { ...aggiornati[i], [campo]: val };
@@ -78,13 +91,11 @@ export default function App() {
     const grigio = { r: 247, g: 247, b: 245 };
     const bordo = { r: 210, g: 210, b: 205 };
 
-    // Carica logo e footer PNG trasparenti
     const logoImg = await caricaImmagine("/logo.png");
     const footerImg = await caricaImmagine("/footer.png");
 
-    // ── HEADER ──────────────────────────────────────────────
     const logoW = 48;
-    const logoH = logoW * 0.25; // ratio 4:1 esatto
+    const logoH = logoW * 0.25;
     const headerH = logoH + 12;
     doc.setFillColor(255, 255, 255);
     doc.rect(0, 0, W, headerH, "F");
@@ -93,12 +104,10 @@ export default function App() {
       doc.addImage(logoImg, "PNG", margin, (headerH - logoH) / 2, logoW, logoH);
     }
 
-    // Separatore verticale sottile
     doc.setDrawColor(bordo.r, bordo.g, bordo.b);
     doc.setLineWidth(0.3);
     doc.line(margin + logoW + 6, 5, margin + logoW + 6, headerH - 5);
 
-    // Titolo centrato nello spazio a destra del logo
     const titoloX = margin + logoW + 10;
     const titoloSpazio = W - titoloX - margin;
     doc.setFont("helvetica", "bold");
@@ -116,7 +125,6 @@ export default function App() {
 
     y = headerH + 7;
 
-    // ── INFO CANTIERE ────────────────────────────────────────
     const infoFields = [
       ["Cantiere", cantiere],
       ["Responsabile", responsabile],
@@ -137,7 +145,6 @@ export default function App() {
 
     y += 4;
 
-    // ── HELPER SEZIONE ───────────────────────────────────────
     const sezioneHeader = (titolo) => {
       doc.setFillColor(grigio.r, grigio.g, grigio.b);
       doc.rect(margin, y, colW, 5.5, "F");
@@ -150,7 +157,6 @@ export default function App() {
       y += 8;
     };
 
-    // ── TABELLA PRESENZE ─────────────────────────────────────
     sezioneHeader("Presenze operai");
 
     const colNome = colW * 0.72;
@@ -188,7 +194,6 @@ export default function App() {
     doc.text(`${totaleOre}h`, margin + colNome + colOre / 2, y + 4.5, { align: "center" });
     y += 11;
 
-    // ── TESTI ────────────────────────────────────────────────
     const scriviTesto = (titolo, testo) => {
       if (!testo) return;
       sezioneHeader(titolo);
@@ -204,7 +209,6 @@ export default function App() {
     scriviTesto("Materiali utilizzati", materiali);
     scriviTesto("Note e anomalie", anomalie);
 
-    // ── FOTO ─────────────────────────────────────────────────
     if (foto.length > 0) {
       const gap = 5;
       const fotoW = (colW - gap) / 2;
@@ -238,12 +242,10 @@ export default function App() {
       }
     }
 
-    // ── FOOTER SU OGNI PAGINA ────────────────────────────────
     const totPagine = doc.getNumberOfPages();
     for (let p = 1; p <= totPagine; p++) {
       doc.setPage(p);
 
-      // Immagine footer con dati società
       if (footerImg) {
         const fW = 65;
         const fH = (footerImg.naturalHeight / footerImg.naturalWidth) * fW;
@@ -251,7 +253,6 @@ export default function App() {
         doc.addImage(footerImg, "PNG", W / 2 - fW / 2, fY, fW, fH);
       }
 
-      // Riga numerazione in fondo
       doc.setFillColor(nero.r, nero.g, nero.b);
       doc.rect(0, 287, W, 10, "F");
       doc.setFontSize(7);
@@ -265,7 +266,6 @@ export default function App() {
     doc.save(nomefile);
     setGenerando(false);
     setSuccesso(true);
-    setTimeout(() => setSuccesso(false), 3000);
   };
 
   return (
@@ -279,7 +279,6 @@ export default function App() {
 
       <main className="form-body">
 
-        {/* Dati generali */}
         <section className="sezione">
           <h2 className="sezione-titolo">Dati generali</h2>
           <div className="campo">
@@ -315,7 +314,6 @@ export default function App() {
           </div>
         </section>
 
-        {/* Presenze */}
         <section className="sezione">
           <div className="sezione-head">
             <h2 className="sezione-titolo">Presenze operai</h2>
@@ -353,7 +351,6 @@ export default function App() {
           <button className="btn-aggiungi" onClick={aggiungiOperaio}>+ Aggiungi operaio</button>
         </section>
 
-        {/* Attività */}
         <section className="sezione">
           <h2 className="sezione-titolo">Attività svolte</h2>
           <div className="campo">
@@ -362,7 +359,6 @@ export default function App() {
           </div>
         </section>
 
-        {/* Materiali */}
         <section className="sezione">
           <h2 className="sezione-titolo">Materiali utilizzati</h2>
           <div className="campo">
@@ -371,7 +367,6 @@ export default function App() {
           </div>
         </section>
 
-        {/* Anomalie */}
         <section className="sezione">
           <h2 className="sezione-titolo">Note e anomalie</h2>
           <div className="campo">
@@ -380,14 +375,13 @@ export default function App() {
           </div>
         </section>
 
-        {/* Foto */}
         <section className="sezione">
           <h2 className="sezione-titolo">Documentazione fotografica</h2>
           <div className="foto-upload-area" onClick={() => fotoRef.current.click()}>
             <span className="foto-icon">📷</span>
             <span>Tocca per aggiungere foto</span>
           </div>
-          <input ref={fotoRef} type="file" accept="image/*" multiple capture="environment"
+          <input ref={fotoRef} type="file" accept="image/*" multiple
             onChange={gestisciFoto} style={{ display: "none" }} />
           {foto.length > 0 && (
             <div className="foto-grid">
@@ -401,7 +395,6 @@ export default function App() {
           )}
         </section>
 
-        {/* CTA */}
         <div className="cta-area">
           <button
             className={`btn-genera ${generando ? "loading" : ""} ${successo ? "success" : ""}`}
@@ -409,9 +402,13 @@ export default function App() {
           >
             {generando ? "Generazione in corso..." : successo ? "✓ PDF scaricato" : "Genera PDF"}
           </button>
+          {successo && (
+            <button className="btn-nuovo" onClick={nuovoRapportino}>
+              + Nuovo rapportino
+            </button>
+          )}
         </div>
 
-        {/* Footer form con logo società */}
         <div className="form-footer">
           <img src="/footer.png" alt="Milano Contract" className="footer-logo" />
         </div>
