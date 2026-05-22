@@ -257,7 +257,7 @@ export default function App() {
 
           sezioneHeader("Firma");
 
-          const sigData = sigRef.current.getTrimmedCanvas().toDataURL("image/png");
+          const sigData = sigRef.current.getCanvas().toDataURL("image/png");
           const sigW = 70;
           const sigH = 25;
           doc.addImage(sigData, "PNG", margin, y, sigW, sigH);
