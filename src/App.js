@@ -92,11 +92,15 @@ export default function App() {
     const bordo = { r: 210, g: 210, b: 205 };
 
     const logoImg = await caricaImmagine("/footer.png");
-    const footerImg = await caricaImmagine("/footer.png");
 
+    // ── HEADER ──────────────────────────────────────────────
     const logoW = 48;
-    const logoH = logoW * 0.25;
+    // Calcola ratio reale dall'immagine
+    const logoH = logoImg
+      ? (logoImg.naturalHeight / logoImg.naturalWidth) * logoW
+      : 12;
     const headerH = logoH + 12;
+
     doc.setFillColor(255, 255, 255);
     doc.rect(0, 0, W, headerH, "F");
 
@@ -242,17 +246,10 @@ export default function App() {
       }
     }
 
+    // ── FOOTER SU OGNI PAGINA (solo numerazione, niente logo) ───
     const totPagine = doc.getNumberOfPages();
     for (let p = 1; p <= totPagine; p++) {
       doc.setPage(p);
-
-      if (footerImg) {
-        const fW = 65;
-        const fH = (footerImg.naturalHeight / footerImg.naturalWidth) * fW;
-        const fY = 284 - fH;
-        doc.addImage(footerImg, "PNG", W / 2 - fW / 2, fY, fW, fH);
-      }
-
       doc.setFillColor(nero.r, nero.g, nero.b);
       doc.rect(0, 287, W, 10, "F");
       doc.setFontSize(7);
